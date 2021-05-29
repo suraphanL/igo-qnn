@@ -3,8 +3,11 @@ import numpy as np
 import itertools
 
 # importing qiskit
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from qiskit.circuit import ParameterVector
+from qiskit import Aer, QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit.circuit import Parameter, ParameterVector
+
+from qiskit.utils import QuantumInstance
+from qiskit_machine_learning.neural_networks import CircuitQNN
 
 
 class InductiveGroversQNN(object):
@@ -15,18 +18,12 @@ class InductiveGroversQNN(object):
         self.input_size = input_size
         self.hidden_layer_params = hidden_layer_params
         self.oracularizer_type = oracularizer_type
-        self.model_params = {
-            "neural_weights": [],
-            "neural_activations": [],
-            "neural_entanglers": [],
-        }
 
         def _init_neuron_weights(size, id):
             layer = QuantumRegister(size)
             neuron_qc = QuantumCircuit(layer)
 
             param_vec = ParameterVector("$I_{%s}$" % id, 3)
-            self.model_params["neural_weights"].append(param_vec)
             neuron_qc.u(*param_vec, layer)
 
             return neuron_qc.to_gate(label="Neural Initializer ")
@@ -36,7 +33,6 @@ class InductiveGroversQNN(object):
             neuron_qc = QuantumCircuit(layer)
 
             param_vec = ParameterVector("$A_{%s}$" % id, 3)
-            self.model_params["neural_activations"].append(param_vec)
             neuron_qc.u(*param_vec, layer)
 
             return neuron_qc.to_gate(label="Neural Activation ")
@@ -53,7 +49,6 @@ class InductiveGroversQNN(object):
                     param_vec = ParameterVector(
                         "$E^{%s}_{%s, %s}$" % (id, neuron_1, neuron_2), 8 * 3
                     )
-                    self.model_params["neural_entanglers"].append(param_vec)
                     entangler_qc.u(
                         param_vec[0], param_vec[1], param_vec[2], hidden_1[neuron_1]
                     )
@@ -74,7 +69,6 @@ class InductiveGroversQNN(object):
                     param_vec = ParameterVector(
                         "$E^{%s}_{%s, %s}$" % (id, neuron_1, neuron_2), 2 * 3
                     )
-                    self.model_params["neural_entanglers"].append(param_vec)
                     entangler_qc.u(
                         param_vec[0], param_vec[1], param_vec[2], hidden_1[neuron_1]
                     )
@@ -235,3 +229,12 @@ class InductiveGroversQNN(object):
         self.circuit.barrier()
 
         self.circuit.measure(output, measure)
+
+        qi_qasm = QuantumInstance(Aer.get_backend("qasm_simulator"), shots=10)
+        self.qnn = CircuitQNN(
+            self.circuit,
+            [],
+            self.circuit.parameters,
+            sparse=True,
+            quantum_instance=qi_qasm,
+        )
