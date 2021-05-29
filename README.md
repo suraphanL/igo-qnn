@@ -29,6 +29,6 @@ This generalization of Grover's oracularization may prove particularly effective
 ## Usage
 
 To create a new instance of a model,
-```
+```python
 qnn = InductiveGroversQNN(2, [{'size': 2, 'type': 'pairwise-full'}, {'size': 2, 'type': 'pairwise-full'}])
 ```
