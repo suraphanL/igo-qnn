@@ -30,5 +30,11 @@ This generalization of Grover's oracularization may prove particularly effective
 
 To create a new instance of a model,
 ```python
-qnn = InductiveGroversQNN(2, [{'size': 2, 'type': 'pairwise-full'}, {'size': 2, 'type': 'pairwise-full'}])
+from igo_qnn import InductiveGroversQNN
+
+model = InductiveGroversQNN(2, [{'size': 2, 'type': 'pairwise-full'}, {'size': 2, 'type': 'pairwise-full'}])
+```
+To cast the model to an instance of `qiskit_machine_learning.neural_networks.CircuitQNN`,
+```python
+qnn = model.toCircuitQNN()
 ```
