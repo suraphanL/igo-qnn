@@ -230,8 +230,9 @@ class InductiveGroversQNN(object):
 
         self.circuit.measure(output, measure)
 
+    def toCircuitQNN(self):
         qi_qasm = QuantumInstance(Aer.get_backend("qasm_simulator"), shots=10)
-        self.qnn = CircuitQNN(
+        return CircuitQNN(
             self.circuit,
             [],
             self.circuit.parameters,
